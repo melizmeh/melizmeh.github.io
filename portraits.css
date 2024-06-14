@@ -1,0 +1,22 @@
+@font-face {
+	font-family: 'Rather';
+	src: url("./RATHER.otf") format("opentype"),
+		
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black; /* Écran noir */
+    font-family: Arial, sans-serif;
+}
+.titleblock {
+    width: 100%;
+    position: relative;
+    text-align: center;
+}

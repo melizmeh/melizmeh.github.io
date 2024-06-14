@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map with Video Popups</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+        .video-popup {
+            width: 100%; /* Taille initiale des vidéos */
+            height: 100%; /* Taille initiale des vidéos */
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000; /* Assurez-vous que la vidéo est au-dessus de la carte */
+        }
+        .video-overlay {
+            position: relative;
+            background-color: rgba(128, 128, 128, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-overlay .placeholder {
+            width: 100%;
+            height: 100%;
+        }
+        .video-overlay:hover .video-popup {
+            display: block;
+        }
+        .video-overlay:hover .placeholder {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialisation de la carte
+        var map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -2,
+            maxZoom: 2,
+            zoomSnap: 0.5
+        });
+
+        // Dimensions de l'image (en pixels)
+        var w = 4400,
+            h = 4000,
+            url = 'mapny.jpeg'; // Changer le chemin vers votre image
+
+        // Limites de l'image
+        var southWest = map.unproject([0, h], map.getMaxZoom()-1);
+        var northEast = map.unproject([w, 0], map.getMaxZoom()-1);
+        var bounds = new L.LatLngBounds(southWest, northEast);
+
+        // Ajouter l'image comme calque de tuiles
+        L.imageOverlay(url, bounds).addTo(map);
+
+        map.setMaxBounds(bounds);
+        map.fitBounds(bounds);
+
+        // Liste des vidéos avec leurs coordonnées relatives (en pixels)
+        var videos = [
+            {coords: [100, 150], src: 'IMG_5344.mp4'},
+            {coords: [200, 250], src: 'IMG_5344.mp4'}
+            // Ajoutez autant de vidéos que nécessaire
+        ];
+
+        // Fonction pour définir la taille du conteneur vidéo en fonction des dimensions réelles de la vidéo
+        function setVideoContainerSize(videoElement, container, scale) {
+            videoElement.addEventListener('loadedmetadata', function() {
+                var newWidth = videoElement.videoWidth * scale;
+                var newHeight = videoElement.videoHeight * scale;
+                container.style.width = newWidth + 'px';
+                container.style.height = newHeight + 'px';
+                videoElement.dataset.originalWidth = videoElement.videoWidth;
+                videoElement.dataset.originalHeight = videoElement.videoHeight;
+            });
+        }
+
+        // Fonction pour ajuster la taille des vidéos en fonction du niveau de zoom
+        function adjustVideoSize() {
+            var zoomLevel = map.getZoom();
+            var scale = Math.min(Math.pow(2, zoomLevel) * 0.05, 3); // Ajustez ce facteur selon vos besoins (ici limité à 3 fois la taille initiale)
+
+            document.querySelectorAll('.video-popup').forEach(function(videoElement) {
+                var originalWidth = videoElement.dataset.originalWidth;
+                var originalHeight = videoElement.dataset.originalHeight;
+                var newWidth = originalWidth * scale;
+                var newHeight = originalHeight * scale;
+
+                videoElement.parentElement.style.width = newWidth + 'px';
+                videoElement.parentElement.style.height = newHeight + 'px';
+            });
+        }
+
+        // Supprimer tous les marqueurs actuellement sur la carte
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Marker) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Ajouter des div personnalisés pour chaque vidéo
+        videos.forEach(function(video) {
+            var latlng = map.unproject(video.coords, map.getMaxZoom()-1);
+
+            // Créer un div personnalisé avec le contenu de la vidéo
+            var videoDiv = document.createElement('div');
+            videoDiv.className = 'custom-marker';
+
+            var videoContent = `
+                <div class="video-overlay">
+                    <div class="placeholder">Survolez pour voir la vidéo</div>
+                    <video class="video-popup" muted>
+                        <source src="${video.src}" type="video/mp4">
+                        Votre navigateur ne supporte pas la balise vidéo.
+                    </video>
+                </div>`;
+
+            videoDiv.innerHTML = videoContent;
+
+            // Ajouter le div personnalisé à la carte comme un overlay
+            L.DomEvent.disableClickPropagation(videoDiv); // Éviter la propagation des clics à travers le div
+            L.DomEvent.disableScrollPropagation(videoDiv); // Empêcher le défilement de la carte lorsque le div est scrollé
+
+            // Ajouter le marqueur à la carte avec le div personnalisé
+            var marker = L.marker(latlng, {
+                icon: L.divIcon({ className: 'custom-icon', html: videoDiv })
+            }).addTo(map);
+
+            // Obtenir les éléments vidéo et overlay
+            var videoPopup = videoDiv.querySelector('.video-popup');
+            var videoOverlay = videoDiv.querySelector('.video-overlay');
+
+            // Définir la taille du conteneur en fonction de la taille réelle de la vidéo et du zoom initial
+            setVideoContainerSize(videoPopup, videoOverlay, Math.min(Math.pow(2, map.getZoom()) * 0.05, 3));
+
+            // Contrôle de la vidéo au survol
+            marker.on('mouseover', function() {
+                videoPopup.currentTime = 0; // Remettre la vidéo au début (optionnel)
+                videoPopup.play(); // Démarrer la lecture de la vidéo au survol
+            });
+            marker.on('mouseout', function() {
+                videoPopup.pause(); // Mettre en pause la vidéo lorsque la souris quitte le marqueur
+                videoPopup.currentTime = 0; // Remettre la vidéo au début pour le prochain survol (optionnel)
+            });
+        });
+
+        // Ajuster la taille des vidéos au zoom
+        map.on('zoom', adjustVideoSize);
+
+        // Initial call to set the video sizes correctly
+        adjustVideoSize();
+        window.addEventListener('resize', function() {
+            map.invalidateSize();
+        });
+    </script>
+</body>
+</html>
