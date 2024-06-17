@@ -1,23 +1,85 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="video.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Page</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    .section {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+    }
+    .red {
+      background-color: red;
+      color: white;
+    }
+    
+    .white {
+      background-color: white;
+      color: black;
+    }
+    .center-container {
+      text-align: center;
+      margin-top: 20px;
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+    .category-link {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #333;
+    }
+    .category-link.active {
+      color: red;
+    }
+  </style>
 </head>
 <body>
-    <div id="center-container">
-        <a href="./photography.html" class="category-link" id="link1">PHOTOGRAPHY.</a>
-        <a href="./video.html" class="category-link" id="link2">VIDEOS.</a>
-        <a href="./projects.html" class="category-link" id="link3">PROJECTS.</a>
-        <a href="#" class="category-link" id="link4">ABOUT.</a>
+
+  <div id="center-container" class="center-container">
+    <a href="./photography.html" class="category-link" id="link1">PHOTOGRAPHY.</a>
+    <a href="./video.html" class="category-link active" id="link2">VIDEOS.</a>
+    <a href="./projects.html" class="category-link" id="link3">PROJECTS.</a>
+    <a href="./about.html" class="category-link" id="link4">ABOUT.</a>
+  </div>
+
+  <section id="home" class="section black">
+    <div>
+      <h1>Video 1</h1>
     </div>
-    <div id="new-titles-container">
-    
-        
+  </section>
+
+  <section id="about" class="section white">
+    <div>
+      <h1>Video 2</h1>
     </div>
-    
-<script src="video.js"></script>
+  </section>
+
+  <section id="portfolio" class="section black">
+    <div>
+      <h1>Video 3</h1>
+    </div>
+  </section>
+
+  <section id="contact" class="section white">
+    <div>
+      <h1>About</h1>
+    </div>
+  </section>
+
 </body>
 </html>

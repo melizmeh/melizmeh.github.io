@@ -132,6 +132,7 @@ body, html {
 #carre2 {
     right: 0px;
     top: 0px;
+    z-index: 2;
 }
 #carre2:hover {
     background-image: url("Capture d’écran 2024-03-14 à 02.57.33.png");
